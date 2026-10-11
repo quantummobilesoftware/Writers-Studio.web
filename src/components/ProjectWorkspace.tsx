@@ -320,7 +320,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
             <div
               key={`fold_${fold.id}`}
               onClick={() => handleFolderClick(fold)}
-              className="p-2.5 rounded-xl border flex items-center justify-between cursor-pointer hover:border-[var(--color-primary)] transition-all group"
+              className="p-2.5 rounded-xl border flex items-center justify-between cursor-pointer hover:border-[var(--color-primary)] card-hover-lift transition-all group"
               style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
             >
               <div className="flex items-center gap-2.5 min-w-0">
@@ -338,7 +338,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
               <div
                 key={`doc_${doc.id}`}
                 onClick={() => onSelectDocument(doc)}
-                className="p-2.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all relative pl-3.5"
+                className="p-2.5 rounded-xl border flex items-center justify-between cursor-pointer card-hover-lift transition-all relative pl-3.5"
                 style={{
                   backgroundColor: isSelected ? `${primaryColor}20` : surfaceColor,
                   borderColor: isSelected ? primaryColor : 'var(--color-border)'
@@ -463,7 +463,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
       {showCreateFolder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-sm rounded-3xl p-5 border shadow-2xl space-y-4"
+            className="w-full max-w-sm rounded-3xl p-5 border shadow-2xl space-y-4 animate-popIn"
             style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
           >
             <h3 className="font-bold text-sm text-[var(--color-text)] flex items-center gap-2">
@@ -505,7 +505,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
       {showCreateDoc && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-sm rounded-3xl p-5 border shadow-2xl space-y-4"
+            className="w-full max-w-sm rounded-3xl p-5 border shadow-2xl space-y-4 animate-popIn"
             style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
           >
             <h3 className="font-bold text-sm text-[var(--color-text)] flex items-center gap-2">
@@ -582,7 +582,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
       {docToRename && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-sm rounded-3xl p-5 border shadow-2xl space-y-4"
+            className="w-full max-w-sm rounded-3xl p-5 border shadow-2xl space-y-4 animate-popIn"
             style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
           >
             <h3 className="font-bold text-sm text-[var(--color-text)]">
@@ -626,7 +626,7 @@ export const ProjectWorkspace: React.FC<ProjectWorkspaceProps> = ({
       {docToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-sm rounded-3xl p-5 border shadow-2xl space-y-4"
+            className="w-full max-w-sm rounded-3xl p-5 border shadow-2xl space-y-4 animate-popIn"
             style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
           >
             <h3 className="font-bold text-sm text-rose-500">

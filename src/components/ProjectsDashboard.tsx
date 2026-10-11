@@ -18,14 +18,17 @@ import {
   FileText,
   Calendar,
   Grid3X3,
-  List
+  List,
+  Cloud
 } from 'lucide-react';
+import { User as FirebaseUser } from 'firebase/auth';
 import { WorkspaceProject, ProjectType, Document } from '../types';
 import { StorageService } from '../services/storage';
 import { l } from '../services/localization';
 import { useTheme } from './ThemeWrapper';
 import { CreateProjectDialog } from './CreateProjectDialog';
 import { AccountProfileDialog } from './AccountProfileDialog';
+import { subscribeAuth, getCurrentUser } from '../services/googleAuth';
 
 interface ProjectsDashboardProps {
   onSelectProject: (project: WorkspaceProject) => void;
@@ -60,6 +63,13 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onSelectPr
 
   const authorAvatar = StorageService.getAuthorAvatar();
   const interfaceStyle = StorageService.getInterfaceStyle();
+  const [googleUser, setGoogleUser] = useState<FirebaseUser | null>(() => getCurrentUser());
+
+  useEffect(() => {
+    return subscribeAuth(user => {
+      setGoogleUser(user);
+    });
+  }, []);
 
   // Reload data on storage event
   useEffect(() => {
@@ -276,15 +286,39 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onSelectPr
             <kbd className="hidden lg:inline px-1.5 py-0.5 rounded text-[10px] opacity-40 font-mono bg-[var(--color-border)]">/</kbd>
           </button>
 
-          {/* Direct Create Project Button for Desktop */}
+          {/* Google Account & Cloud Sync button */}
           <button
-            onClick={() => setShowCreateModal(true)}
-            className="h-10 px-4 rounded-xl text-xs font-bold shadow-md transition-all hover:scale-102 active:scale-95 flex items-center gap-2"
-            style={{ backgroundColor: primaryColor, color: '#000' }}
+            onClick={() => setShowAccountModal(true)}
+            className="h-10 px-3 rounded-xl flex items-center gap-2 border text-xs font-semibold transition-all hover:bg-white/5 active:scale-95"
+            style={{
+              borderColor: 'var(--color-border)',
+              backgroundColor: surfaceContainerLow,
+              color: 'var(--color-text)'
+            }}
+            title={googleUser ? `Google: ${googleUser.email}` : (lang === 'ru' ? 'Синхронизация с Google Диском' : 'Google Drive Sync')}
           >
-            <Plus className="w-4 h-4" />
-            <span>{l('new_project', lang)}</span>
-            <kbd className="hidden xl:inline px-1 py-0.2 rounded text-[9px] bg-black/20 font-mono">Ctrl+N</kbd>
+            {googleUser ? (
+              <div className="flex items-center gap-2">
+                <div className="relative flex items-center justify-center">
+                  {googleUser.photoURL ? (
+                    <img src={googleUser.photoURL} alt="Google" className="w-5 h-5 rounded-full object-cover" />
+                  ) : (
+                    <User className="w-4 h-4 text-emerald-400" />
+                  )}
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 border border-[var(--color-surface)]" />
+                </div>
+                <span className="hidden lg:inline text-xs font-medium max-w-[120px] truncate">
+                  {googleUser.displayName?.split(' ')[0] || 'Google'}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-[var(--color-primary)]">
+                <Cloud className="w-4 h-4" />
+                <span className="hidden lg:inline text-xs font-medium text-[var(--color-text)]">
+                  {lang === 'ru' ? 'Google Диск' : 'Google Drive'}
+                </span>
+              </div>
+            )}
           </button>
         </div>
       </header>
@@ -448,7 +482,7 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onSelectPr
             className="rounded-3xl p-10 border flex flex-col items-center justify-center text-center my-8 shadow-xs"
             style={{ backgroundColor: surfaceContainerLow, borderColor: 'var(--color-border)' }}
           >
-            <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-indigo-900/30 to-amber-700/20 flex items-center justify-center mb-4 relative shadow-inner">
+            <div className="w-24 h-24 rounded-3xl bg-gradient-to-tr from-indigo-900/30 to-amber-700/20 flex items-center justify-center mb-4 relative shadow-inner animate-floatSlow">
               <FolderOpen className="w-12 h-12 text-[var(--color-primary)] opacity-80" />
               <Sparkles className="w-4 h-4 text-amber-400 absolute top-2 right-2 animate-pulse" />
             </div>
@@ -489,7 +523,7 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onSelectPr
                     e.preventDefault();
                     setLongPressProj(proj);
                   }}
-                  className={`rounded-2xl border p-4 flex cursor-pointer transition-all hover:border-[var(--color-primary)] hover:shadow-md relative overflow-hidden group ${
+                  className={`rounded-2xl border p-4 flex cursor-pointer transition-all card-hover-lift hover:border-[var(--color-primary)] relative overflow-hidden group ${
                     viewLayout === 'GRID' ? 'flex-col justify-between min-h-[148px]' : 'items-center gap-3.5'
                   }`}
                   style={{
@@ -602,15 +636,17 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onSelectPr
         )}
       </div>
 
-      {/* Floating Action Button for Mobile */}
-      {(subTab === 'ACTIVE' || subTab === 'FAVORITES') && (
+      {/* Floating Action Button in bottom right corner (appears only when at least one project exists) */}
+      {filteredProjects.length > 0 && subTab !== 'TRASH' && (
         <button
           onClick={() => setShowCreateModal(true)}
-          className="md:hidden fixed bottom-20 right-5 z-30 px-5 py-3 rounded-full font-bold text-xs flex items-center gap-2 shadow-2xl transition-all active:scale-95"
+          className="fixed bottom-20 right-5 md:bottom-8 md:right-8 z-40 group px-4 py-3 sm:px-5 sm:py-3.5 rounded-full font-bold text-xs sm:text-sm flex items-center gap-2.5 shadow-2xl transition-all duration-200 hover:scale-105 active:scale-95 border border-black/10 cursor-pointer animate-slideUp"
           style={{ backgroundColor: primaryColor, color: '#000' }}
+          title={`${l('new_project', lang)} (Ctrl+N)`}
         >
-          <Plus className="w-5 h-5" />
-          <span>{l('new_project', lang)}</span>
+          <Plus className="w-5 h-5 transition-transform group-hover:rotate-90 duration-300" />
+          <span className="font-extrabold tracking-wide">{l('new_project', lang)}</span>
+          <kbd className="hidden lg:inline px-1.5 py-0.5 rounded text-[10px] bg-black/15 font-mono">Ctrl+N</kbd>
         </button>
       )}
 
@@ -639,7 +675,7 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onSelectPr
       {projectToUnlock && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-sm rounded-3xl p-6 border shadow-2xl space-y-4"
+            className="w-full max-w-sm rounded-3xl p-6 border shadow-2xl space-y-4 animate-popIn"
             style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
           >
             <div className="flex items-center gap-2 font-bold text-sm text-[var(--color-text)]">
@@ -694,7 +730,7 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onSelectPr
       {projectToRename && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-sm rounded-3xl p-6 border shadow-2xl space-y-4"
+            className="w-full max-w-sm rounded-3xl p-6 border shadow-2xl space-y-4 animate-popIn"
             style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
           >
             <h3 className="font-bold text-sm text-[var(--color-text)]">
@@ -734,7 +770,7 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onSelectPr
       {longPressProj && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-xs rounded-3xl p-5 border shadow-2xl space-y-3"
+            className="w-full max-w-xs rounded-3xl p-5 border shadow-2xl space-y-3 animate-popIn"
             style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
           >
             <h3 className="font-bold text-sm text-[var(--color-text)] truncate">{longPressProj.title}</h3>
@@ -784,7 +820,7 @@ export const ProjectsDashboard: React.FC<ProjectsDashboardProps> = ({ onSelectPr
       {projectToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-sm rounded-3xl p-6 border shadow-2xl space-y-4"
+            className="w-full max-w-sm rounded-3xl p-6 border shadow-2xl space-y-4 animate-popIn"
             style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
           >
             <h3 className="font-bold text-sm text-[var(--color-text)]">

@@ -32,7 +32,8 @@ import {
   LayoutGrid,
   X,
   Keyboard,
-  Monitor
+  Monitor,
+  Cloud
 } from 'lucide-react';
 import { Document, EditorBlock, DocumentHistory, BlockStyle } from '../types';
 import { StorageService } from '../services/storage';
@@ -40,6 +41,8 @@ import { ExportService } from '../services/exportService';
 import { l } from '../services/localization';
 import { useTheme } from './ThemeWrapper';
 import { CustomBlockConfigDialog } from './CustomBlockConfigDialog';
+import { getCurrentUser } from '../services/googleAuth';
+import { GoogleDriveSync } from '../services/googleDriveSync';
 
 interface DocumentEditorProps {
   document: Document;
@@ -385,6 +388,37 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
     setShowExportModal(false);
   };
 
+  const [isDriveSaving, setIsDriveSaving] = useState(false);
+
+  const handleSaveToGoogleDrive = async () => {
+    const user = getCurrentUser();
+    if (!user) {
+      alert(
+        isRussian
+          ? 'Для сохранения в Google Диск сначала подключите Google аккаунт (кнопка Google Диск в шапке Кабинета).'
+          : 'Please connect your Google account in Cabinet first.'
+      );
+      return;
+    }
+
+    setIsDriveSaving(true);
+    try {
+      const filename = (docTitle.trim() || 'Document').replace(/\s+/g, '_') + '.txt';
+      const txt = ExportService.exportToTxt(blocks);
+      await GoogleDriveSync.saveFileToDrive(filename, txt, 'text/plain');
+      alert(
+        isRussian
+          ? `Файл "${filename}" успешно сохранен на вашем Google Диске!`
+          : `File "${filename}" saved successfully to your Google Drive!`
+      );
+      setShowExportModal(false);
+    } catch (err: any) {
+      alert(isRussian ? `Ошибка сохранения в Диск: ${err.message}` : `Google Drive error: ${err.message}`);
+    } finally {
+      setIsDriveSaving(false);
+    }
+  };
+
   // Block Helpers
   const activeBlock = blocks[activeBlockIndex] || blocks[0];
 
@@ -663,11 +697,12 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
                   <div
                     key={b.id}
                     onClick={() => setActiveBlockIndex(idx)}
-                    className="rounded-2xl border transition-all relative overflow-hidden pl-4 pr-3 py-3"
+                    className="rounded-2xl border transition-all duration-200 relative overflow-hidden pl-4 pr-3 py-3 card-hover-lift"
                     style={{
-                      backgroundColor: isSelected ? `${accentColor}12` : surfaceContainerLow,
-                      borderColor: isSelected ? `${accentColor}80` : 'var(--color-border)',
-                      boxShadow: isSelected ? `0 0 0 1px ${accentColor}40` : undefined
+                      backgroundColor: isSelected ? `${accentColor}15` : surfaceContainerLow,
+                      borderColor: isSelected ? accentColor : 'var(--color-border)',
+                      boxShadow: isSelected ? `0 0 16px -2px ${accentColor}35, 0 0 0 1px ${accentColor}80` : undefined,
+                      transform: isSelected ? 'scale(1.003)' : undefined
                     }}
                   >
                     {/* Left vertical color stripe */}
@@ -1179,7 +1214,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
       {showGeminiModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-lg rounded-3xl p-5 sm:p-6 shadow-2xl border transition-all flex flex-col max-h-[90vh] space-y-3.5"
+            className="w-full max-w-lg rounded-3xl p-5 sm:p-6 shadow-2xl border transition-all flex flex-col max-h-[90vh] space-y-3.5 animate-popIn"
             style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
           >
             <div className="flex items-center justify-between">
@@ -1268,6 +1303,14 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
             </div>
 
             {/* Gemini Output */}
+            {isGeminiLoading && (
+              <div className="p-4 rounded-2xl border border-amber-500/30 shimmer-effect space-y-2.5 animate-pulse">
+                <div className="h-3 rounded-full bg-white/20 w-3/4" />
+                <div className="h-3 rounded-full bg-white/15 w-full" />
+                <div className="h-3 rounded-full bg-white/10 w-1/2" />
+              </div>
+            )}
+
             {geminiError && (
               <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-500 text-xs">
                 {geminiError}
@@ -1319,7 +1362,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
       {showAddBlockModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl border transition-all flex flex-col max-h-[85vh] space-y-3.5"
+            className="w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl border transition-all flex flex-col max-h-[85vh] space-y-3.5 animate-popIn"
             style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
           >
             <div className="flex items-center justify-between">
@@ -1421,7 +1464,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
       {showExportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-sm rounded-3xl p-5 sm:p-6 shadow-2xl border transition-all flex flex-col space-y-4"
+            className="w-full max-w-sm rounded-3xl p-5 sm:p-6 shadow-2xl border transition-all flex flex-col space-y-4 animate-popIn"
             style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
           >
             <div className="flex items-center justify-between">
@@ -1483,14 +1526,34 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
               </div>
             )}
 
-            <button
-              onClick={handleExport}
-              className="w-full py-2.5 rounded-xl text-xs font-bold shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
-              style={{ backgroundColor: primaryColor, color: '#000' }}
-            >
-              <Download className="w-4 h-4" />
-              <span>{isRussian ? 'Скачать файл' : 'Download File'}</span>
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={handleExport}
+                className="w-full py-2.5 rounded-xl text-xs font-bold shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+                style={{ backgroundColor: primaryColor, color: '#000' }}
+              >
+                <Download className="w-4 h-4" />
+                <span>{isRussian ? 'Скачать файл на компьютер' : 'Download File to PC'}</span>
+              </button>
+
+              <button
+                onClick={handleSaveToGoogleDrive}
+                disabled={isDriveSaving}
+                className="w-full py-2.5 rounded-xl text-xs font-bold border transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                style={{
+                  borderColor: primaryColor,
+                  color: primaryColor,
+                  backgroundColor: `${primaryColor}15`
+                }}
+              >
+                <Cloud className={`w-4 h-4 ${isDriveSaving ? 'animate-bounce' : ''}`} />
+                <span>
+                  {isDriveSaving
+                    ? (isRussian ? 'Сохранение в Диск...' : 'Saving to Drive...')
+                    : (isRussian ? 'Сохранить копию в Google Диск' : 'Save Copy to Google Drive')}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1513,7 +1576,7 @@ export const DocumentEditor: React.FC<DocumentEditorProps> = ({
       {showShortcutsHelp && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-md rounded-3xl p-6 border shadow-2xl space-y-4"
+            className="w-full max-w-md rounded-3xl p-6 border shadow-2xl space-y-4 animate-popIn"
             style={{ backgroundColor: surfaceColor, borderColor: 'var(--color-border)' }}
           >
             <div className="flex items-center justify-between">

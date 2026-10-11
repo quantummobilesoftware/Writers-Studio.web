@@ -116,7 +116,7 @@ export const CustomPaletteDialog: React.FC<CustomPaletteDialogProps> = ({ onDism
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/65 backdrop-blur-xs animate-fadeIn">
       <div
-        className="w-full max-w-2xl rounded-3xl p-5 sm:p-6 shadow-2xl border transition-all flex flex-col max-h-[92vh]"
+        className="w-full max-w-2xl rounded-3xl p-5 sm:p-6 shadow-2xl border transition-all flex flex-col max-h-[92vh] animate-popIn"
         style={{
           backgroundColor: surfaceColor,
           borderColor: 'var(--color-border)'

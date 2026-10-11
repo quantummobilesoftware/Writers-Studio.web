@@ -43,7 +43,7 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ onDism
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
       <div
-        className="w-full max-w-md rounded-3xl p-6 shadow-2xl border transition-all flex flex-col"
+        className="w-full max-w-md rounded-3xl p-6 shadow-2xl border transition-all flex flex-col animate-popIn"
         style={{
           backgroundColor: surfaceColor,
           borderColor: 'var(--color-border)'
@@ -53,7 +53,7 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ onDism
           <h2 className="text-xl font-bold text-[var(--color-text)]">
             {l('create_proj_title', lang)}
           </h2>
-          <button onClick={onDismiss} className="p-1 rounded-full text-[var(--color-text-sec)] hover:opacity-80">
+          <button onClick={onDismiss} className="p-1 rounded-full text-[var(--color-text-sec)] hover:opacity-80 active:scale-90 transition-transform">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -87,7 +87,7 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ onDism
                 <button
                   key={t.id}
                   onClick={() => setType(t.id)}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all active:scale-95"
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl border text-xs font-semibold transition-all duration-200 hover:scale-102 active:scale-95"
                   style={{
                     backgroundColor: isSel ? `${primaryColor}20` : surfaceContainerHigh,
                     borderColor: isSel ? primaryColor : 'var(--color-border)',
@@ -114,10 +114,11 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ onDism
                 <button
                   key={hex}
                   onClick={() => setColorHex(hex)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform active:scale-90"
+                  className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 hover:scale-115 active:scale-90 shadow-xs"
                   style={{
                     backgroundColor: hex,
-                    border: isSel ? '2.5px solid var(--color-text)' : '1px solid transparent'
+                    border: isSel ? '2.5px solid var(--color-text)' : '1px solid transparent',
+                    transform: isSel ? 'scale(1.1)' : undefined
                   }}
                 >
                   {isSel && <Check className="w-4 h-4 text-white" />}
@@ -158,7 +159,7 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ onDism
         <div className="flex gap-2.5">
           <button
             onClick={onDismiss}
-            className="flex-1 py-2.5 rounded-xl border text-xs font-semibold hover:opacity-80 transition-opacity"
+            className="flex-1 py-2.5 rounded-xl border text-xs font-semibold hover:opacity-80 active:scale-95 transition-all"
             style={{ borderColor: 'var(--color-border)', color: 'var(--color-text)' }}
           >
             {l('cancel', lang)}
@@ -166,7 +167,7 @@ export const CreateProjectDialog: React.FC<CreateProjectDialogProps> = ({ onDism
           <button
             onClick={handleCreate}
             disabled={!title.trim()}
-            className="flex-1 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all active:scale-95 disabled:opacity-50"
+            className="flex-1 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-200 hover:scale-102 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
             style={{ backgroundColor: primaryColor, color: '#000' }}
           >
             {l('create', lang)}

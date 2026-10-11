@@ -73,14 +73,14 @@ export const WriterStatsScreen: React.FC<WriterStatsScreenProps> = ({ lang }) =>
 
       {/* 1. Streak Card */}
       <div
-        className="rounded-3xl p-5 border flex items-center gap-4 shadow-xs"
+        className="rounded-3xl p-5 border flex items-center gap-4 shadow-xs animate-slideUp card-hover-lift"
         style={{ backgroundColor: surfaceContainerLow, borderColor: 'var(--color-border)' }}
       >
         <div
           className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 shadow-sm"
           style={{ backgroundColor: `${primaryColor}20` }}
         >
-          <Flame className="w-7 h-7" style={{ color: primaryColor }} />
+          <Flame className="w-7 h-7 animate-pulse" style={{ color: primaryColor }} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-xs text-[var(--color-text-sec)]">
@@ -94,7 +94,7 @@ export const WriterStatsScreen: React.FC<WriterStatsScreenProps> = ({ lang }) =>
 
       {/* 2. Total Words & Chars Combined Card */}
       <div
-        className="rounded-3xl border overflow-hidden shadow-xs divide-y divide-[var(--color-border)]"
+        className="rounded-3xl border overflow-hidden shadow-xs divide-y divide-[var(--color-border)] animate-slideUp card-hover-lift"
         style={{ backgroundColor: surfaceContainerLow, borderColor: 'var(--color-border)' }}
       >
         {/* Words Row */}
@@ -147,7 +147,7 @@ export const WriterStatsScreen: React.FC<WriterStatsScreenProps> = ({ lang }) =>
 
       {/* 4. Productivity Graph Card (SVG Bar Chart) */}
       <div
-        className="rounded-3xl p-5 border shadow-xs space-y-3"
+        className="rounded-3xl p-5 border shadow-xs space-y-3 animate-slideUp card-hover-lift"
         style={{ backgroundColor: surfaceContainerLow, borderColor: 'var(--color-border)' }}
       >
         <div className="flex items-end gap-3 h-44 pt-2">
@@ -173,7 +173,7 @@ export const WriterStatsScreen: React.FC<WriterStatsScreenProps> = ({ lang }) =>
               return (
                 <div key={item.date} className="flex-1 flex flex-col items-center justify-end h-full z-10 group">
                   <div
-                    className="w-full max-w-[28px] rounded-t-lg transition-all duration-300 group-hover:opacity-80 relative shadow-sm"
+                    className="w-full max-w-[28px] rounded-t-lg transition-all duration-700 ease-out group-hover:scale-y-105 origin-bottom relative shadow-sm"
                     style={{
                       height: `${heightPct}%`,
                       backgroundColor: item.words > 0 ? primaryColor : 'var(--color-border)'

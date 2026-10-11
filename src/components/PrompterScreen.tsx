@@ -244,7 +244,7 @@ export const PrompterScreen: React.FC<PrompterScreenProps> = ({
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setIsScrolling(s => !s)}
-                  className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-90"
+                  className="w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-105 active:scale-90"
                   style={{ backgroundColor: primaryColor, color: '#000' }}
                 >
                   {isScrolling ? <Pause className="w-5 h-5 fill-current" /> : <Play className="w-5 h-5 fill-current ml-0.5" />}

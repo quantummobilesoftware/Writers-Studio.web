@@ -17,7 +17,9 @@ import {
   CheckCircle,
   Search,
   X,
-  Sliders
+  Sliders,
+  Cloud,
+  HardDrive
 } from 'lucide-react';
 import { StorageService } from '../services/storage';
 import { ExportService } from '../services/exportService';
@@ -25,6 +27,9 @@ import { KeepImporter } from '../services/keepImporter';
 import { SUPPORTED_LANGUAGES, l } from '../services/localization';
 import { useTheme } from './ThemeWrapper';
 import { CustomPaletteDialog } from './CustomPaletteDialog';
+import { AccountProfileDialog } from './AccountProfileDialog';
+import { subscribeAuth, getCurrentUser } from '../services/googleAuth';
+import { GoogleDriveSync } from '../services/googleDriveSync';
 import { ThemeMode, ColorPalette, InterfaceStyle, BottomBarStyle } from '../types';
 
 interface AppSettingsScreenProps {
@@ -72,6 +77,16 @@ export const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
   const [keepTargetNew, setKeepTargetNew] = useState(true);
   const [keepNewProjectName, setKeepNewProjectName] = useState(isRussian ? 'Заметки Google Keep' : 'Google Keep Notes');
   const [keepIsPlainText, setKeepIsPlainText] = useState(true);
+
+  // Google Auth and Account Modal
+  const [showAccountModal, setShowAccountModal] = useState(false);
+  const [googleUser, setGoogleUser] = useState(() => getCurrentUser());
+
+  React.useEffect(() => {
+    return subscribeAuth(user => {
+      setGoogleUser(user);
+    });
+  }, []);
 
   // Tensor benchmark
   const [isBenchmarking, setIsBenchmarking] = useState(false);
@@ -499,6 +514,55 @@ export const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
         </div>
       </div>
 
+      {/* 5.5 Google Cloud & Drive Sync */}
+      <div
+        className="rounded-3xl p-5 border space-y-3.5 shadow-xs"
+        style={{ backgroundColor: surfaceContainerLow, borderColor: 'var(--color-border)' }}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-xs"
+              style={{ backgroundColor: `${primaryColor}20`, color: primaryColor }}
+            >
+              <Cloud className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-sm text-[var(--color-text)] flex items-center gap-2">
+                <span>{isRussian ? 'Google Cloud и Google Диск' : 'Google Cloud & Google Drive'}</span>
+                {googleUser && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30">
+                    {isRussian ? 'Подключено' : 'Connected'}
+                  </span>
+                )}
+              </h3>
+              <p className="text-xs text-[var(--color-text-sec)]">
+                {googleUser
+                  ? (isRussian ? `Аккаунт: ${googleUser.email}` : `Connected account: ${googleUser.email}`)
+                  : (isRussian
+                      ? 'Авторизация через Google для синхронизации и резервного копирования рукописей'
+                      : 'Sign in with Google to synchronize and back up your literary manuscripts')}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 pt-1">
+          <button
+            onClick={() => setShowAccountModal(true)}
+            className="flex-1 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all active:scale-95 flex items-center justify-center gap-2"
+            style={{ backgroundColor: primaryColor, color: '#000' }}
+          >
+            <Cloud className="w-4 h-4" />
+            <span>
+              {googleUser
+                ? (isRussian ? 'Управление синхронизацией Google Диска' : 'Manage Google Drive Sync')
+                : (isRussian ? 'Войти через Google и настроить' : 'Sign in with Google & Configure')}
+            </span>
+          </button>
+        </div>
+      </div>
+
       {/* 6. Local JSON Backups */}
       <div
         className="rounded-3xl p-5 border space-y-3.5 shadow-xs"
@@ -643,7 +707,7 @@ export const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
       {showLangModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl border transition-all flex flex-col max-h-[85vh] space-y-3"
+            className="w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl border transition-all flex flex-col max-h-[85vh] space-y-3 animate-popIn"
             style={{ backgroundColor: surfaceContainerLow, borderColor: 'var(--color-border)' }}
           >
             <div className="flex items-center justify-between">
@@ -713,7 +777,7 @@ export const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
       {showKeepModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-fadeIn">
           <div
-            className="w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl border transition-all flex flex-col space-y-3.5 max-h-[90vh]"
+            className="w-full max-w-md rounded-3xl p-5 sm:p-6 shadow-2xl border transition-all flex flex-col space-y-3.5 max-h-[90vh] animate-popIn"
             style={{ backgroundColor: surfaceContainerLow, borderColor: 'var(--color-border)' }}
           >
             <div className="flex items-center justify-between">
@@ -783,6 +847,14 @@ export const AppSettingsScreen: React.FC<AppSettingsScreenProps> = ({
         <CustomPaletteDialog
           lang={lang}
           onDismiss={() => setShowPaletteStudio(false)}
+        />
+      )}
+
+      {/* Account & Google Cloud Sync Dialog */}
+      {showAccountModal && (
+        <AccountProfileDialog
+          lang={lang}
+          onDismiss={() => setShowAccountModal(false)}
         />
       )}
     </div>
